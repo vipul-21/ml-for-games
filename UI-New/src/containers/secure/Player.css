@@ -1,0 +1,22 @@
+.red {
+  background: #c71b1b;
+}
+
+.yellow {
+  background: #fbff00;
+}
+
+.blue {
+  background: #00dcff;
+}
+
+.green {
+  background: #00ff08;
+}
+
+.circle {
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+  margin: 20px;
+}

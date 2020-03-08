@@ -1,0 +1,16 @@
+.header {
+  background: white;
+  box-shadow: rgba(0, 0, 0, 0.14) 0px 2px 4px 0px;
+  height: 62px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 30px;
+  z-index: 1;
+}
+
+.header-label {
+  font-size: 20px;
+  font-weight: 300;
+  padding-left: 16px;
+}

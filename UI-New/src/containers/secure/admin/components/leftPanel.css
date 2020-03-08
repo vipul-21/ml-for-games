@@ -1,0 +1,18 @@
+.left-panel {
+  background: #1b2e43;
+  width: 240px;
+}
+
+.left-logo img {
+  height: 50px;
+  padding: 10px;
+}
+
+.dashboard-logo {
+  padding: 16px;
+  margin-top: 10px;
+}
+
+.background-white{
+  background: white;
+}

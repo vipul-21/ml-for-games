@@ -1,0 +1,55 @@
+.graph {
+  width: 100%;
+  margin: 40px 0 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.tooltip {
+  background: #990000;
+  color: white;
+  padding: 14px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.23);
+}
+
+.graph-label {
+  color: #f2b8b8;
+  font-size: 12px;
+  text-align: center;
+  padding-top: 6px;
+}
+
+.tooltip-value {
+  font-size: 14px;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.filter {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 30px;
+}
+
+.filter-name {
+   color: '#848484';
+   font-size: 0.6875em;
+   text-transform: uppercase;
+   padding: 0.75em 1em;
+}
+.filter-options {
+   border: 1px solid #d5e5f680;
+   display: flex;
+   align-items: center;
+   margin-left: 1em;
+
+ }
+
+.filter-label {
+  width: 1.75em;
+  height: 0.125em;
+  background: #FFC72C;
+  border: 0.5px solid #FFC72C;
+  border-radius: 4;
+  margin-left: 1em;
+}

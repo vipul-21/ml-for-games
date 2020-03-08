@@ -1,0 +1,36 @@
+.right-panel {
+  background: #f6f8f9;
+  flex: 1;
+  overflow: auto;
+}
+
+.vote-header {
+  background: #1b2e43;
+  color: #fff;
+  padding: 16px 40px;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.update {
+  font-size: 12px;
+}
+
+.filter-label-1 {
+  width: 2.75em;
+  height: 1.125em;
+  background: #80ecf7;
+  border: 0.5px solid #80ecf7;
+  border-radius: 4;
+  margin-left: 1em;
+}
+
+.filter-label-2 {
+  width: 2.75em;
+  height: 1.125em;
+  background: #040a55;
+  border: 0.5px solid #040a55;
+  border-radius: 4;
+  margin-left: 1em;
+}
