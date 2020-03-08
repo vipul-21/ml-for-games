@@ -1,6 +1,5 @@
 import { takeEvery, put, call, takeLatest } from 'redux-saga/effects';
 import { push, goBack } from 'react-router-redux';
-import Web3 from 'web3';
 import TokenStorage from '../services/TokenStorage';
 import { getUser, getAllParties, voteForParty, getAddress, getData, getScores,
    getFlow, getZetaData,startProcess } from '../api/apiClient';

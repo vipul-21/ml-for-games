@@ -131,7 +131,6 @@ class RightPanel extends React.Component {
       var canvas = document.getElementById('map');
       var context = canvas.getContext('2d');
       var that = this;
-      console.log(mapJson);
       canvas.addEventListener('mousemove', function(evt) {
         var mousePos = that.getMousePos(canvas, evt);
         var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
@@ -141,9 +140,27 @@ class RightPanel extends React.Component {
       console.log(firebase);
       var playerA = firebase.database().ref('ghostbuster/a');
       playerA.on('value', function(snapshot) {
-        console.log("Hello ji");
         that.updatePosition("a", snapshot.val())
-        // updateStarCount(postElement, snapshot.val());
+      });
+      var playerB = firebase.database().ref('ghostbuster/b');
+      playerA.on('value', function(snapshot) {
+        that.updatePosition("b", snapshot.val())
+      });
+      var playerC = firebase.database().ref('ghostbuster/c');
+      playerA.on('value', function(snapshot) {
+        that.updatePosition("c", snapshot.val())
+      });
+      var playerD = firebase.database().ref('ghostbuster/d');
+      playerA.on('value', function(snapshot) {
+        that.updatePosition("d", snapshot.val())
+      });
+      var playerE = firebase.database().ref('ghostbuster/e');
+      playerA.on('value', function(snapshot) {
+        that.updatePosition("e", snapshot.val())
+      });
+      var ghost = firebase.database().ref('ghostbuster/ghost');
+      playerA.on('value', function(snapshot) {
+        that.updatePosition("ghost", snapshot.val())
       });
 
   }
@@ -177,15 +194,44 @@ class RightPanel extends React.Component {
 
   updatePosition = (player, value) => {
     switch (player) {
-      case "a":
-      console.log(value);
-        var posX = 100;
-        var posY = 100;
+      case "a": {
+        console.log(value);
+        var posX = mapJson.value[0];
+        var posY = mapJson.value[1];
+
         this.createCircle(posX, posY, "#c71b1b")
         break;
-      case "b":
-
-          break;
+      }
+      case "b": {
+        var posX = mapJson.value[0];
+        var posY = mapJson.value[1];
+        this.createCircle(posX, posY, "#fbff00")
+        break;
+      }
+      case "c": {
+        var posX = mapJson.value[0];
+        var posY = mapJson.value[1];
+        this.createCircle(posX, posY, "#00dcff")
+        break;
+      }
+      case "d": {
+        var posX = mapJson.value[0];
+        var posY = mapJson.value[1];
+        this.createCircle(posX, posY, "#00ff08")
+        break;
+      }
+      case "e": {
+        var posX = mapJson.value[0];
+        var posY = mapJson.value[1];
+        this.createCircle(posX, posY, "#00ff08")
+        break;
+      }
+      case "ghost": {
+        var posX = mapJson.value[0];
+        var posY = mapJson.value[1];
+        this.createCircle(posX, posY, "#000")
+        break;
+      }
 
       default:
 
@@ -229,7 +275,6 @@ class RightPanel extends React.Component {
       <div className="right-panel">
         <Card className={classes.map}>
           <canvas id="map" width="2570" height="1926"></canvas>
-
         </Card>
       </div>
     )
