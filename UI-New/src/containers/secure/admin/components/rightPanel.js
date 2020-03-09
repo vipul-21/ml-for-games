@@ -26,7 +26,8 @@ import Paper from '@material-ui/core/Paper';
 // import first from '../../assets/first.jpg';
 // import second from '../../assets/second.jpg';
 import logo from '../../../../assets/dashboard.svg';
-import map from '../../../../assets/map_large.png';
+import map from '../../../../assets/map_large_1.jpg';
+import ghost from '../../../../assets/ghost_1.png';
 const colors = ["#040a55", "#1e2bd7", "#2876d7", "#55b8f3", "#80ecf7"]
 import './rightPanel.css';
 import mapJson from '../../map.js';
@@ -186,16 +187,28 @@ class RightPanel extends React.Component {
     };
   }
 
-  createCircle = (posX, posY, color) => {
+  createCircle = (posX, posY, color, ply) => {
+
     var c = document.getElementById("map");
     var ctx = c.getContext("2d");
-    ctx.beginPath();
-    ctx.arc(posX, posY, 30,  0, 2 * Math.PI);
-    ctx.lineWidth = 10;
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.strokeStyle = color;
-    ctx.stroke();
+
+    if (ply == "ghost") {
+      var base_image = new Image();
+base_image.src = ghost;
+base_image.onload = function(){
+  ctx.drawImage(base_image, posX-30, posY-30);
+}
+
+    } else {
+      ctx.beginPath();
+      ctx.arc(posX, posY, 30,  0, 2 * Math.PI);
+      ctx.lineWidth = 10;
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.stroke();
+
+    }
   }
   clearLast = (player) => {
     var c = document.getElementById("map");
@@ -324,7 +337,7 @@ class RightPanel extends React.Component {
         this.setState({
           ghost: [posX, posY]
         })
-        this.createCircle(posX, posY, "#000")
+        this.createCircle(posX, posY, "#000", "ghost")
         break;
       }
 
