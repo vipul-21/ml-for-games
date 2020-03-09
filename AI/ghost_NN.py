@@ -535,11 +535,11 @@ class Environment():
             return 2
         return 0
 
-    # returns true is mr_x wins
+    # returns true is ghost wins
     def winner(self):
 
-        for each_detective in self.ghostbuster_positions:
-            if each_detective == self.ghost_posititon:
+        for each_ghostbuster in self.ghostbuster_positions:
+            if each_ghostbuster == self.ghost_posititon:
                 return False
         return True
 
@@ -652,7 +652,7 @@ def train():
     eps_decay = 0.001
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
-    lr = 0.001
+    lr = 0.001 #learning rate for adam
     num_episodes = 200  # 1000
     # state_dim = True
 
@@ -710,13 +710,15 @@ def train():
             reward = em.take_action(action, timestep)
             # print ('Reward',reward)
 
-            next_state, _ = em.get_state(timestep)
+            next_state, update_state = em.get_state(timestep)
             # print ('Next State in the form of feature vector',next_state)
 
             memory.push(
                 Experience(torch.tensor(state), action_tensor, torch.tensor(next_state), torch.tensor([reward])))
             # memory.push(Experience(state, action_tensor, next_state, torch.tensor(reward)))
             # print ('MEMORY',memory)
+            update_UI(update_state)
+
             state = next_state
 
             if memory.can_provide_sample(batch_size):
@@ -794,7 +796,7 @@ def update_UI(data): #TODO : Update firebase for the positions, tokens and round
     # print(r)
     # status = r.status
     # print("Updated:" % status)
-    time.sleep(5)
+    time.sleep(1)
 
 def test():
     print("Here we are in test")
@@ -918,12 +920,8 @@ class RequestHandler(BaseHTTPRequestHandler):
       # if(self.path):
       print(self.path)
       if self.path == "/start":
-        test()
-        print("Here 1")
-
-
-        print("Here 2")
-
+        # test()
+        train()
       self.send_response(200)
       self._send_cors_headers()
       self.end_headers()
@@ -931,9 +929,6 @@ class RequestHandler(BaseHTTPRequestHandler):
       response = {}
       response["status"] = "OK"
       self.send_dict_response(response)
-  def update(self):
-      # cases for each ghost and players
-      print("Here")
 
 
   def do_POST(self):

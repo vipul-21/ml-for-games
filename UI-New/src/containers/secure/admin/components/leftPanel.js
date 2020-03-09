@@ -90,10 +90,25 @@ padding: "20px 0"
 class LeftPanel extends React.Component {
   state = {
     parties: this.props.parties,
+    round: -1
   };
 
+  componentDidMount() {
+    var that= this;
+    var round = firebase.database().ref('ghostbuster/round');
+      round.on('value', function(snapshot) {
+        that.updateRound(snapshot.val())
+      });
+  }
+  updateRound = (value) => {
+    this.setState({
+      round: value
+    })
+  }
+
+
   render() {
-    const {classes, parties} = this.props;
+    const {classes, parties,round} = this.props;
     const players = [{
       name: "A",
       color: "red"
@@ -113,7 +128,7 @@ class LeftPanel extends React.Component {
           GHOST BUSTERS
         </div>
         <div className={classes.round}>
-          Round : 1/4
+          Round : {this.state.round}/24
         </div>
         <div className={classes.lastMoves}>
           Ghost Last Moves

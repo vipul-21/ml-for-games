@@ -115,6 +115,9 @@ const styles = {
 
 // TODO: Implement select design
 class RightPanel extends React.Component {
+  state = {
+
+  };
   _handleClick = node => {
   // Aim at node from outside it
   const distance = 40;
@@ -128,38 +131,39 @@ class RightPanel extends React.Component {
 
 
   componentDidMount() {
-      var canvas = document.getElementById('map');
-      var context = canvas.getContext('2d');
+      // var canvas = document.getElementById('map');
+      // var context = canvas.getContext('2d');
       var that = this;
-      canvas.addEventListener('mousemove', function(evt) {
-        var mousePos = that.getMousePos(canvas, evt);
-        var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
-        that.writeMessage(canvas, message);
-      }, false);
-      this.createCircle();
-      console.log(firebase);
+      // canvas.addEventListener('mousemove', function(evt) {
+      //   var mousePos = that.getMousePos(canvas, evt);
+      //   var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
+      //   console.log("message: ", mousePos.x + ',' + mousePos.y);
+      //   that.writeMessage(canvas, message);
+      // }, false);
+      // this.createCircle();
+      // console.log(firebase);
       var playerA = firebase.database().ref('ghostbuster/a');
       playerA.on('value', function(snapshot) {
         that.updatePosition("a", snapshot.val())
       });
       var playerB = firebase.database().ref('ghostbuster/b');
-      playerA.on('value', function(snapshot) {
+      playerB.on('value', function(snapshot) {
         that.updatePosition("b", snapshot.val())
       });
       var playerC = firebase.database().ref('ghostbuster/c');
-      playerA.on('value', function(snapshot) {
+      playerC.on('value', function(snapshot) {
         that.updatePosition("c", snapshot.val())
       });
       var playerD = firebase.database().ref('ghostbuster/d');
-      playerA.on('value', function(snapshot) {
+      playerD.on('value', function(snapshot) {
         that.updatePosition("d", snapshot.val())
       });
       var playerE = firebase.database().ref('ghostbuster/e');
-      playerA.on('value', function(snapshot) {
+      playerE.on('value', function(snapshot) {
         that.updatePosition("e", snapshot.val())
       });
       var ghost = firebase.database().ref('ghostbuster/ghost');
-      playerA.on('value', function(snapshot) {
+      ghost.on('value', function(snapshot) {
         that.updatePosition("ghost", snapshot.val())
       });
 
@@ -188,47 +192,138 @@ class RightPanel extends React.Component {
     ctx.beginPath();
     ctx.arc(posX, posY, 30,  0, 2 * Math.PI);
     ctx.lineWidth = 10;
+    ctx.fillStyle = color;
+    ctx.fill();
     ctx.strokeStyle = color;
     ctx.stroke();
   }
-
-  updatePosition = (player, value) => {
+  clearLast = (player) => {
+    var c = document.getElementById("map");
+    var ctx = c.getContext("2d");
+    var posX = -1;
+    var posY = -1;
     switch (player) {
       case "a": {
-        console.log(value);
-        var posX = mapJson.value[0];
-        var posY = mapJson.value[1];
+        if (this.state.a) {
+        posX = this.state.a[0];
+        posY = this.state.a[1];
+      }
+        break;
+      }
+      case "b": {
+        if (this.state.b) {
 
+        posX = this.state.b[0];
+        posY = this.state.b[1];
+      }
+        break;
+      }
+      case "c": {
+        if (this.state.c) {
+
+        posX = this.state.c[0];
+        posY = this.state.c[1];
+      }
+        break;
+      }
+      case "d": {
+        if (this.state.d) {
+
+        posX = this.state.d[0];
+        posY = this.state.d[1];
+      }
+        break;
+      }
+      case "e": {
+        if (this.state.e) {
+
+        posX = this.state.e[0];
+        posY = this.state.e[1];
+      }
+        break;
+      }
+      case "ghost": {
+        if (this.state.ghost) {
+
+        posX = this.state.ghost[0];
+        posY = this.state.ghost[1];
+      }
+        break;
+      }
+      default:
+        break;
+    }
+
+    console.log("player",player, posX, posY);
+    if (posX != - 1 && posY != -1) {
+      ctx.clearRect(posX-40, posY-40, posX+40, posX+40);
+    }
+
+  }
+  updatePosition = (player, value) => {
+    console.log(player, value);
+    switch (player) {
+      case "a": {
+        console.log(value, mapJson[value.toString()]);
+        var posX = mapJson[value.toString()][0];
+        var posY = mapJson[value.toString()][1];
+        this.clearLast('a')
+        this.setState({
+          a: [posX, posY]
+        })
         this.createCircle(posX, posY, "#c71b1b")
         break;
       }
       case "b": {
-        var posX = mapJson.value[0];
-        var posY = mapJson.value[1];
+        var posX = mapJson[value.toString()][0];
+        var posY = mapJson[value.toString()][1];
+        this.clearLast('b')
+        this.setState({
+          b: [posX, posY]
+        })
         this.createCircle(posX, posY, "#fbff00")
         break;
       }
       case "c": {
-        var posX = mapJson.value[0];
-        var posY = mapJson.value[1];
+        var posX = mapJson[value.toString()][0];
+        var posY = mapJson[value.toString()][1];
+        this.clearLast('c')
+
+        this.setState({
+          c: [posX, posY]
+        })
         this.createCircle(posX, posY, "#00dcff")
         break;
       }
       case "d": {
-        var posX = mapJson.value[0];
-        var posY = mapJson.value[1];
+        var posX = mapJson[value.toString()][0];
+        var posY = mapJson[value.toString()][1];
+        this.clearLast('d')
+        this.setState({
+          d: [posX, posY]
+        })
         this.createCircle(posX, posY, "#00ff08")
         break;
       }
       case "e": {
-        var posX = mapJson.value[0];
-        var posY = mapJson.value[1];
-        this.createCircle(posX, posY, "#00ff08")
+        var posX = mapJson[value.toString()][0];
+        var posY = mapJson[value.toString()][1];
+        this.clearLast('e')
+
+        this.setState({
+          e: [posX, posY]
+        })
+        this.createCircle(posX, posY, "#fb00ff")
         break;
       }
       case "ghost": {
-        var posX = mapJson.value[0];
-        var posY = mapJson.value[1];
+        var posX = mapJson[value.toString()][0];
+        var posY = mapJson[value.toString()][1];
+        this.clearLast('ghost')
+
+        this.setState({
+          ghost: [posX, posY]
+        })
         this.createCircle(posX, posY, "#000")
         break;
       }

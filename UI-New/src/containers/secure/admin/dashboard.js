@@ -77,6 +77,7 @@ const styles = {
 class Dashboard extends React.Component {
   state = {
     parties: this.props.parties,
+    round: -1
   };
 
   componentDidMount() {
@@ -84,6 +85,7 @@ class Dashboard extends React.Component {
     // this.props.getScores();
     // this.props.getFlow();
     // this.props.get();
+
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -98,7 +100,7 @@ class Dashboard extends React.Component {
     return (
         <LightTheme className="grey" grey>
           <div className="admin-container">
-            <LeftPanel/>
+            <LeftPanel round ={this.state.round}/>
             <RightPanel />
 
           </div>
