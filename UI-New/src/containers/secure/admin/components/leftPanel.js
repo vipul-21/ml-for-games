@@ -61,36 +61,70 @@ const styles = {
   header: {
     color: "#fff",
     fontSize: "48px",
-    textAlign: "center"
+    textAlign: "center",
+    borderBottom: '2px solid #fff',
+
   },
   round: {
-    fontSize: "35px",
+    margin: '20px 0',
+    fontSize: "22px",
     textAlign: "center",
     padding: "20px 0",
-    background: "white"
+    color: "white"
   },
   lastMoves:{
-  padding: "40px 0",
+  padding: "20 0",
   textAlign: "center",
-  background: "yellow",
-  fontSize: "20px"
+  background: "white",
+  color: "black",
+  fontSize: "23px"
 },
   players: {
     margin: "40px 0"
   },
   playerStatus: {
     textAlign: "center",
-background: "cornflowerblue",
-fontSize: "30px",
-padding: "20px 0"
+    background: "cornflowerblue",
+    fontSize: "30px",
+    padding: "20px 0"
+  },
+  lastMovesList: {
+    fontSize: '20px',
+    color: "white",
+    padding: "0 20px",
+    textAlign: "center",
+    margin: "20px 0",
+    height: "120px"
+  },
+  score: {
+    fontSize: '22px',
+    borderTop: '2px solid #fff',
+    margin: '20px 0',
+    padding: '20px 0'
+  },
+  top: {
+    fontSize: '22px',
+    margin: '0 0 20px',
+
+  },
+  button: {
+    textAlign: 'center',
+  },
+  buttonSize: {
+    fontSize: '30px'
   }
+
 };
 
 // TODO: Implement select design
 class LeftPanel extends React.Component {
   state = {
-    parties: this.props.parties,
-    round: -1
+    ghostList: [],
+    round: -1,
+    epoch: -1,
+    ghostbuster: 0,
+    ghost: 0,
+    resources: [[],[],[],[],[],[]]
   };
 
   componentDidMount() {
@@ -99,7 +133,49 @@ class LeftPanel extends React.Component {
       round.on('value', function(snapshot) {
         that.updateRound(snapshot.val())
       });
+
+      var ghost_last = firebase.database().ref('ghostbuster/ghostLastMove');
+      ghost_last.on('value', function(snapshot) {
+        that.updateghostlist(snapshot.val())
+      });
+      var epoch = firebase.database().ref('ghostbuster/epoch');
+        epoch.on('value', function(snapshot) {
+          that.setState({
+            epoch: snapshot.val()
+          })
+        });
+      var ghost_win = firebase.database().ref('ghostbuster/ghost_win');
+        ghost_win.on('value', function(snapshot) {
+          that.setState({
+            ghost: snapshot.val()
+          })
+        });
+
+        var busters_win = firebase.database().ref('ghostbuster/busters_win');
+          ghost_win.on('value', function(snapshot) {
+            that.setState({
+              ghostbuster: snapshot.val()
+            })
+          });
+          var resources = firebase.database().ref('ghostbuster/resources');
+            resources.on('value', function(snapshot) {
+              that.setState({
+                resources: snapshot.val()
+              })
+            });
+
+
+
   }
+
+  updateghostlist = (value) => {
+    var l = this.state.ghostList;
+    l.push(value);
+    this.setState({
+      ghostList: l
+    });
+  }
+
   updateRound = (value) => {
     this.setState({
       round: value
@@ -121,11 +197,26 @@ class LeftPanel extends React.Component {
     }, {
       name: "D",
       color: "green"
+    }, {
+      name: 'E',
+      color: 'pink'
     }]
     return (
       <div className="left-panel">
         <div className={classes.header}>
-          GHOST BUSTERS
+          Ghost busters
+          <div className={classes.score}>
+            Epoch : {this.state.epoch}/1000
+          </div>
+
+          <div className={classes.top}>
+            <div className={classes.top}>
+              Ghost Wins: {this.state.ghost}
+            </div>
+            <div className={classes.top}>
+              Ghost Buster Wins: {this.state.ghostbuster}
+            </div>
+          </div>
         </div>
         <div className={classes.round}>
           Round : {this.state.round}/24
@@ -133,21 +224,30 @@ class LeftPanel extends React.Component {
         <div className={classes.lastMoves}>
           Ghost Last Moves
         </div>
+        <div className={classes.lastMovesList}>
+        {this.state.ghostList.map((list) => (
+          <div>
+            {list} <br/>
+          </div>
+        ))}
+        </div>
 
 
         <div className={classes.players}>
-          <div className={classes.playerStatus}>Players Status</div>
-          {players.map((player) => (
-            <Player player={player} />
+          <div className={classes.lastMoves}>Players Status</div>
+          {players.map((player, i) => (
+            <Player player={player} resources = {this.state.resources[i]} />
           ))}
         </div>
-        <button onClick={this.props.startTrain}>
+        <div className={classes.button}>
+        <button className={classes.buttonSize} onClick={this.props.startTrain}>
           Train
         </button>
 
-        <button onClick={this.props.startTest}>
+        <button className={classes.buttonSize} onClick={this.props.startTest}>
           Test
         </button>
+        </div>
 
       </div>
     )

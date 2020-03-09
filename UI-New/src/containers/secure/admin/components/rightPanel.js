@@ -117,7 +117,7 @@ const styles = {
 // TODO: Implement select design
 class RightPanel extends React.Component {
   state = {
-
+    ghostList: []
   };
   _handleClick = node => {
   // Aim at node from outside it
@@ -177,14 +177,6 @@ class RightPanel extends React.Component {
     context.fillStyle = 'black';
     context.fillText(message, 10, 25);
 
-  }
-
-  getMousePos = (canvas, evt) => {
-    var rect = canvas.getBoundingClientRect();
-    return {
-      x: evt.clientX - rect.left,
-      y: evt.clientY - rect.top
-    };
   }
 
   createCircle = (posX, posY, color, ply) => {

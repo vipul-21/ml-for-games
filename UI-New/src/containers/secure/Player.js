@@ -42,13 +42,21 @@ const styles = {
     padding: '5px 0',
   },
   name: {
-    fontSize: "40px",
-    padding: "20px",
+    fontSize: "30",
+    padding: "20px 10px",
     color: "white",
     alignItems:"center",
     display: 'flex',
     justifyContent: "center"
-  }
+  },
+  resources: {
+    display: "flex",
+border: "1px solid",
+},
+block: {
+  borderRight: '1px solid',
+  padding:'15px'
+}
 };
 
 // TODO: Implement select design
@@ -57,13 +65,22 @@ class Player extends React.Component {
     parties: this.props.parties,
   };
   render() {
-    const {classes, parties, player} = this.props;
+    const {classes, parties, player, resources} = this.props;
+    var temp = [1,2,3]
+
     return (
       <div className={classes.name}>
         <div>
           {player.name}
         </div>
         <div className={"circle " + player.color} />
+        <div className={classes.resources}>
+          {resources.map((t) => (
+            <div className={classes.block}>
+              {t}
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
