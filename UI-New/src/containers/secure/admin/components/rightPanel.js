@@ -28,8 +28,14 @@ import Paper from '@material-ui/core/Paper';
 import logo from '../../../../assets/dashboard.svg';
 import map from '../../../../assets/map_large_1.jpg';
 import ghost from '../../../../assets/ghost_1.png';
+import buster_1 from '../../../../assets/buster_1.png';
+import buster_2 from '../../../../assets/buster_2.png';
+import buster_3 from '../../../../assets/buster_3.png';
+import buster_4 from '../../../../assets/buster_4.png';
+import buster_5 from '../../../../assets/buster_5.png';
 const colors = ["#040a55", "#1e2bd7", "#2876d7", "#55b8f3", "#80ecf7"]
 import './rightPanel.css';
+
 import mapJson from '../../map.js';
 const styles = {
   cardCategoryWhite: {
@@ -183,24 +189,72 @@ class RightPanel extends React.Component {
 
     var c = document.getElementById("map");
     var ctx = c.getContext("2d");
-
-    if (ply == "ghost") {
-      var base_image = new Image();
-base_image.src = ghost;
-base_image.onload = function(){
-  ctx.drawImage(base_image, posX-30, posY-30);
-}
-
-    } else {
-      ctx.beginPath();
-      ctx.arc(posX, posY, 30,  0, 2 * Math.PI);
-      ctx.lineWidth = 10;
-      ctx.fillStyle = color;
-      ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.stroke();
+    switch (ply) {
+      case "ghost":{
+        var base_image = new Image();
+        base_image.src = ghost;
+        base_image.onload = function(){
+        ctx.drawImage(base_image, posX-30, posY-30);
+        }
+        break;
+      }
+      case "a":{
+        var base_image = new Image();
+        base_image.src = buster_1;
+        base_image.onload = function(){
+        ctx.drawImage(base_image, posX-100, posY-30);
+        }
+        break;
+      }
+      case "b": {
+        var base_image = new Image();
+        base_image.src = buster_5;
+        base_image.onload = function(){
+        ctx.drawImage(base_image, posX-100, posY-30);
+        }
+        break;
+      }
+      case "c": {
+        var base_image = new Image();
+        base_image.src = buster_3;
+        base_image.onload = function(){
+        ctx.drawImage(base_image, posX-100, posY-30);
+        }
+        break;
+      }
+      case "d": {
+        var base_image = new Image();
+        base_image.src = buster_4;
+        base_image.onload = function(){
+        ctx.drawImage(base_image, posX-100, posY-30);
+        }
+        break;
+      }
+      case "e": {
+        var base_image = new Image();
+        base_image.src = buster_2;
+        base_image.onload = function(){
+        ctx.drawImage(base_image, posX-100, posY-30);
+        }
+        break;
+      }
+      default:
+        break;
 
     }
+    if (ply == "ghost") {
+}
+    //
+    // } else {
+    //   ctx.beginPath();
+    //   ctx.arc(posX, posY, 30,  0, 2 * Math.PI);
+    //   ctx.lineWidth = 10;
+    //   ctx.fillStyle = color;
+    //   ctx.fill();
+    //   ctx.strokeStyle = color;
+    //   ctx.stroke();
+
+    // }
   }
   clearLast = (player) => {
     var c = document.getElementById("map");
@@ -249,7 +303,6 @@ base_image.onload = function(){
       }
       case "ghost": {
         if (this.state.ghost) {
-
         posX = this.state.ghost[0];
         posY = this.state.ghost[1];
       }
@@ -276,7 +329,7 @@ base_image.onload = function(){
         this.setState({
           a: [posX, posY]
         })
-        this.createCircle(posX, posY, "#c71b1b")
+        this.createCircle(posX, posY, "#c71b1b", "a")
         break;
       }
       case "b": {
@@ -286,7 +339,7 @@ base_image.onload = function(){
         this.setState({
           b: [posX, posY]
         })
-        this.createCircle(posX, posY, "#fbff00")
+        this.createCircle(posX, posY, "#fbff00", "b")
         break;
       }
       case "c": {
@@ -297,7 +350,7 @@ base_image.onload = function(){
         this.setState({
           c: [posX, posY]
         })
-        this.createCircle(posX, posY, "#00dcff")
+        this.createCircle(posX, posY, "#00dcff", "c")
         break;
       }
       case "d": {
@@ -307,7 +360,7 @@ base_image.onload = function(){
         this.setState({
           d: [posX, posY]
         })
-        this.createCircle(posX, posY, "#00ff08")
+        this.createCircle(posX, posY, "#00ff08", "d")
         break;
       }
       case "e": {
@@ -318,7 +371,7 @@ base_image.onload = function(){
         this.setState({
           e: [posX, posY]
         })
-        this.createCircle(posX, posY, "#fb00ff")
+        this.createCircle(posX, posY, "#fb00ff", "e")
         break;
       }
       case "ghost": {

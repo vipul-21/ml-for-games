@@ -19,7 +19,6 @@ import dashboard from '../../../../assets/dashboard.svg';
 import dashboard1 from '../../../../assets/dashboard-1.svg';
 import tree from '../../../../assets/tree.svg';
 import search from '../../../../assets/search.svg';
-
 import './leftPanel.css';
 
 const styles = {
@@ -94,7 +93,8 @@ const styles = {
     padding: "0 20px",
     textAlign: "center",
     margin: "20px 0",
-    height: "120px"
+    height: "120px",
+    overflow: "auto"
   },
   score: {
     fontSize: '22px',
@@ -146,13 +146,15 @@ class LeftPanel extends React.Component {
         });
       var ghost_win = firebase.database().ref('ghostbuster/ghost_win');
         ghost_win.on('value', function(snapshot) {
+          alert("Ghost win");
           that.setState({
             ghost: snapshot.val()
           })
         });
 
         var busters_win = firebase.database().ref('ghostbuster/busters_win');
-          ghost_win.on('value', function(snapshot) {
+          busters_win.on('value', function(snapshot) {
+            alert("Ghost busters win");
             that.setState({
               ghostbuster: snapshot.val()
             })
