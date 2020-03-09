@@ -85,6 +85,16 @@ export function startProcess() {
     formatData(res));
   return response;
 }
+export function startTest() {
+  const response = axios.get(`http://localhost:8000/test`).then(res =>
+    formatData(res));
+  return response;
+}
+export function startTrain() {
+  const response = axios.get(`http://localhost:8000/train`).then(res =>
+    formatData(res));
+  return response;
+}
 
 
 export function postData(partyId) {

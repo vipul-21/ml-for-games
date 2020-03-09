@@ -141,6 +141,13 @@ class LeftPanel extends React.Component {
             <Player player={player} />
           ))}
         </div>
+        <button onClick={this.props.startTrain}>
+          Train
+        </button>
+
+        <button onClick={this.props.startTest}>
+          Test
+        </button>
 
       </div>
     )
@@ -159,7 +166,15 @@ const mapDispatchToProps = (dispatch) => {
     },
     voteForParty:(partyId) => {
       dispatch({ type: 'VOTE_INIT', partyId })
+    },
+    startTrain:() => {
+      dispatch({ type: 'TRAIN_INIT' })
+    },
+    startTest:() => {
+      dispatch({ type: 'TEST_INIT' })
     }
+
+
   }
 }
 

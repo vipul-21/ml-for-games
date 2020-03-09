@@ -2,7 +2,7 @@ import { takeEvery, put, call, takeLatest } from 'redux-saga/effects';
 import { push, goBack } from 'react-router-redux';
 import TokenStorage from '../services/TokenStorage';
 import { getUser, getAllParties, voteForParty, getAddress, getData, getScores,
-   getFlow, getZetaData,startProcess } from '../api/apiClient';
+   getFlow, getZetaData,startProcess, startTest, startTrain } from '../api/apiClient';
 
 
 function* getAllPartiesInit() {
@@ -318,6 +318,35 @@ function* getScoresInit(action) {
     // yield put({ type: 'GET_USER_FAILED', message: e.message });
   }
 }
+function* startTrainInit(action) {
+  try {
+    const data = yield call(startTrain);
+    // console.log(data)
+    // if (data.success) {
+
+      // yield put({ type: 'GET_SCORES_DONE', result: data })
+      // yield put(push('/feedback'));
+
+    // }
+  } catch (e) {
+    // yield put({ type: 'GET_USER_FAILED', message: e.message });
+  }
+}
+
+function* startTestInit(action) {
+  try {
+    const data = yield call(startTest);
+    // console.log(data)
+    // if (data.success) {
+
+      // yield put({ type: 'GET_SCORES_DONE', result: data })
+      // yield put(push('/feedback'));
+
+    // }
+  } catch (e) {
+    // yield put({ type: 'GET_USER_FAILED', message: e.message });
+  }
+}
 
 function* saga() {
   yield takeEvery('GET_ALL_PARTIES_INIT', getAllPartiesInit);
@@ -330,6 +359,8 @@ function* saga() {
   yield takeLatest('GET_MALICIOUS_INIT', getMaliciousInit);
   yield takeEvery('GET_ADDRESS_INIT', getAddressInit);
   yield takeEvery('SIGNIN_PUBLIC_INIT', signinPulicInit);
+  yield takeEvery('TRAIN_INIT', startTrainInit);
+  yield takeEvery('TEST_INIT', startTestInit);
 }
 
 export default saga;
