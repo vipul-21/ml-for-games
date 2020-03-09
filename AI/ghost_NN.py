@@ -98,7 +98,7 @@ class Agent():
         if rate > random.random():
             # print ('Exploring')
             action = random.choice(possible_moves)  # pick a possible out of the available ones - change
-            return torch.tensor(action[0]).to(self.device), rate  # TODO - model action tensor
+            return torch.tensor(action[0]).to(self.device), rate, action[1]  # TODO - model action tensor
 
         else:
             # turning off gradient tracking during inference, not training
@@ -110,16 +110,21 @@ class Agent():
                 max_index = 0
                 # print("POSSIBLE MOVES: ", possible_moves)
                 possible_moves_indexes = []
+                possible_moves_type = []
+                chosen_mode = []
                 for i in possible_moves:
                     possible_moves_indexes.append(i[0])
+                    possible_moves_type.append(i[1])
+
                 for index, value in enumerate(returned_states):
                     if (index in possible_moves_indexes and value > max_value):
+                        chosen_mode = possible_moves_type[possible_moves_indexes.index(index)]
                         max_value = value
                         max_index = index
                 max_index_tensor = torch.tensor(max_index).to(self.device)
                 # result = policy_net(state).argmax(dim=-1).to(self.device)
                 # print ('RESULT', max_index_tensor)
-                return max_index_tensor, rate
+                return max_index_tensor, rate, chosen_mode
                 # return policy_net(torch.tensor(state)).argmax(dim=1).to(self.device) # exploit
 
     def select_action_testing(self, state, policy_net, possible_moves):
@@ -128,20 +133,24 @@ class Agent():
             returned_states = policy_net(state)
             max_value = float("-inf")
             max_index = 0
-            # print("POSSIBLE MOVES: ", possible_moves)
+            print("POSSIBLE MOVES: ", possible_moves)
             possible_moves_indexes = []
-
+            possible_moves_type = []
+            chosen_mode = []
             for i in possible_moves:
                 possible_moves_indexes.append(i[0])
+                possible_moves_type.append(i[1])
 
             for index, value in enumerate(returned_states):
                 if (index in possible_moves_indexes and value > max_value):
+                    chosen_mode = possible_moves_type[possible_moves_indexes.index(index)]
                     max_value = value
                     max_index = index
             max_index_tensor = torch.tensor(max_index)
+            print(chosen_mode)
 
             # print ('Result',max_index_tensor)
-            return max_index_tensor
+            return max_index_tensor,chosen_mode
             # return policy_net(torch.tensor(state)).argmax(dim=1).to(self.device) # exploit
 
 class Environment():
@@ -704,7 +713,7 @@ def train():
         for timestep in range(25):
             # print ('Timestep-->', timestep, ' x position', em.ghost_posititon)
             # print ('ghostbuster Position', em.ghostbuster_positions)
-            action_tensor, rate = agent.select_action(state, policy_net, em.board[em.ghost_posititon])
+            action_tensor, rate, last_move_type = agent.select_action(state, policy_net, em.board[em.ghost_posititon])
 
             action = action_tensor.tolist()
             # print('Move to take for Ghost', agent.mappings[action[0]])
@@ -719,7 +728,7 @@ def train():
                 Experience(torch.tensor(state), action_tensor, torch.tensor(next_state), torch.tensor([reward])))
             # memory.push(Experience(state, action_tensor, next_state, torch.tensor(reward)))
             # print ('MEMORY',memory)
-            update_UI(update_state)
+            update_UI(update_state, action, last_move_type)
 
             state = next_state
 
@@ -770,7 +779,7 @@ def train():
     torch.save(policy_net, 'ghost.pth')
 
 ############################TEST##########################
-def update_UI(data): #TODO : Update firebase for the positions, tokens and round
+def update_UI(data, last_move, last_move_type): #TODO : Update firebase for the positions, tokens and round
     # sending post request and saving response as response object
 
     try:
@@ -785,7 +794,7 @@ def update_UI(data): #TODO : Update firebase for the positions, tokens and round
     # e = data[2][4]
     #
     # round  = data[4]
-    print("Round :", data[4], data[2][0],data[2][1],data[2][2],data[2][3],data[2][4])
+    print("Round :", data[4], data[2][0],data[2][1],data[2][2],data[2][3],data[2][4], last_move)
     # ref.update({
     #     'ghost': ghost_pos,
     #      'a': data[2][0],
@@ -844,17 +853,18 @@ def test():
         # update_UI(initial_state)
 
         for timestep in range(25):
-            action_tensor = agent.select_action_testing(state, policy_net, em.board[em.ghost_posititon])
+            action_tensor, last_move_type = agent.select_action_testing(state, policy_net, em.board[em.ghost_posititon])
 
             action = action_tensor.tolist()
-            # print('Move to take for Mr. X', agent.mappings[action[0]])
+            # print('Move to take for Ghost', agent.mappings[action[0]])
+            # print('Move to take', action)
 
             reward = em.take_action(action_tensor, timestep)
             # print ('Reward',reward)
 
             next_state, update_state = em.get_state(timestep)
             # print ('Next State in the form of feature vector',next_state)
-            update_UI(update_state)
+            update_UI(update_state, action, last_move_type)
             state = next_state
             # print(len(state))
             if em.is_done(timestep) == 2:
@@ -882,84 +892,84 @@ def test():
 
 
 # train()
-# test()
+test()
 
 
 #######################SERVER#########################
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from json import dumps
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import db
-
-""" The HTTP request handler """
-
-cred = credentials.Certificate('firebase-adminsdk.json')
-# Initialize the app with a service account, granting admin privileges
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://hackathon-b4e45.firebaseio.com/'
-})
-ref = db.reference('/ghostbuster')
-
-
-class RequestHandler(BaseHTTPRequestHandler):
-
-  def _send_cors_headers(self):
-      """ Sets headers required for CORS """
-      self.send_header("Access-Control-Allow-Origin", "*")
-      self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-      self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
-
-  def send_dict_response(self, d):
-      """ Sends a dictionary (JSON) back to the client """
-      self.wfile.write(bytes(dumps(d), "utf8"))
-
-  def do_OPTIONS(self):
-      self.send_response(200)
-      self._send_cors_headers()
-      self.end_headers()
-
-  def do_GET(self):
-      # if(self.path):
-      print(self.path)
-      if self.path == "/start":
-        # test()
-        print("")
-        # train()
-      elif self.path == "/train":
-          train()
-      elif self.path == "/test":
-          test()
-
-      self.send_response(200)
-      self._send_cors_headers()
-      self.end_headers()
-
-      response = {}
-      response["status"] = "OK"
-      self.send_dict_response(response)
-
-
-  def do_POST(self):
-      print(self.path)
-      self.send_response(200)
-      self._send_cors_headers()
-      self.send_header("Content-Type", "application/json")
-      self.end_headers()
-
-      dataLength = int(self.headers["Content-Length"])
-      data = self.rfile.read(dataLength)
-
-      print(data)
-
-      response = {}
-      response["status"] = "OK"
-      self.send_dict_response(response)
-
-
-print("Starting server")
-
-
-httpd = HTTPServer(("127.0.0.1", 8000), RequestHandler)
-print("Hosting server on port 8000")
-httpd.serve_forever()
+# from http.server import BaseHTTPRequestHandler, HTTPServer
+# from json import dumps
+# import firebase_admin
+# from firebase_admin import credentials
+# from firebase_admin import db
+#
+# """ The HTTP request handler """
+#
+# cred = credentials.Certificate('firebase-adminsdk.json')
+# # Initialize the app with a service account, granting admin privileges
+# firebase_admin.initialize_app(cred, {
+#     'databaseURL': 'https://hackathon-b4e45.firebaseio.com/'
+# })
+# ref = db.reference('/ghostbuster')
+#
+#
+# class RequestHandler(BaseHTTPRequestHandler):
+#
+#   def _send_cors_headers(self):
+#       """ Sets headers required for CORS """
+#       self.send_header("Access-Control-Allow-Origin", "*")
+#       self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+#       self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
+#
+#   def send_dict_response(self, d):
+#       """ Sends a dictionary (JSON) back to the client """
+#       self.wfile.write(bytes(dumps(d), "utf8"))
+#
+#   def do_OPTIONS(self):
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.end_headers()
+#
+#   def do_GET(self):
+#       # if(self.path):
+#       print(self.path)
+#       if self.path == "/start":
+#         # test()
+#         print("")
+#         # train()
+#       elif self.path == "/train":
+#           train()
+#       elif self.path == "/test":
+#           test()
+#
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.end_headers()
+#
+#       response = {}
+#       response["status"] = "OK"
+#       self.send_dict_response(response)
+#
+#
+#   def do_POST(self):
+#       print(self.path)
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.send_header("Content-Type", "application/json")
+#       self.end_headers()
+#
+#       dataLength = int(self.headers["Content-Length"])
+#       data = self.rfile.read(dataLength)
+#
+#       print(data)
+#
+#       response = {}
+#       response["status"] = "OK"
+#       self.send_dict_response(response)
+#
+#
+# print("Starting server")
+#
+#
+# httpd = HTTPServer(("127.0.0.1", 8000), RequestHandler)
+# print("Hosting server on port 8000")
+# httpd.serve_forever()
