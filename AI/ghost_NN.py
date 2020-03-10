@@ -133,7 +133,7 @@ class Agent():
             returned_states = policy_net(state)
             max_value = float("-inf")
             max_index = 0
-            print("POSSIBLE MOVES: ", possible_moves)
+            # print("POSSIBLE MOVES: ", possible_moves)
             possible_moves_indexes = []
             possible_moves_type = []
             chosen_mode = []
@@ -147,7 +147,7 @@ class Agent():
                     max_value = value
                     max_index = index
             max_index_tensor = torch.tensor(max_index)
-            print(chosen_mode)
+            # print(chosen_mode)
 
             # print ('Result',max_index_tensor)
             return max_index_tensor,chosen_mode
@@ -436,12 +436,14 @@ class Environment():
                       )
 
         self.ghost_posititon = ghost_posititon
+        self.ghost_posititon_avail = None
         self.ghostbuster_positions = ghostbuster_positions
         self.ghost_resources = ghost_resources
         # self.ghostbuster_resources = ghostbuster_resources
         self.ghostbuster_resources = [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]]
         self.done = False
         self.possible_moves = self.board[self.ghost_posititon]
+
 
     def take_action_detectives_random(self):
         d = {
@@ -460,7 +462,7 @@ class Environment():
 
                         if (self.ghostbuster_resources[index][d[x[1][k]]] > 0):
                             new_pm.append((x[0], x[1][k]))
-            print("Detective:", index, "moves : ", new_pm, self.ghostbuster_resources[index])
+            # print("Detective:", index, "moves : ", new_pm, self.ghostbuster_resources[index])
 
             if (len(new_pm) > 0):
                 random_move = random.choice(new_pm)
@@ -488,7 +490,7 @@ class Environment():
             min_dist_val = float("inf")
 
             for move in moves:
-                val = self.getdistance(self.ghost_posititon, move[0])
+                val = self.getdistance(self.ghost_posititon_avail, move[0])
 
                 if (val < min_dist_val):
                     min_dist_node = move
@@ -521,8 +523,16 @@ class Environment():
     def take_action(self, action, timestep):
         # update Mr. X's position to simulate his taking an action
         self.ghost_posititon = action
-        self.take_action_detectives_random()
+        if timestep in [ 8, 18, 24]:
+            self.ghost_posititon_avail = self.ghost_posititon
+        # print(self.ghost_posititon_avail)
+        if self.ghost_posititon_avail is not None:
+            self.ghostbuster_positions, self.ghostbuster_resources = self.take_action_detectives()
+        else:
+            self.take_action_detectives_random()
 
+
+        # self.take_action_detectives_random()
         # detective_position_average = 0
         # for each_detective in self.ghostbuster_positions:
         #   detective_position_average += each_detective
@@ -664,7 +674,7 @@ def train():
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
     lr = 0.001 #learning rate for adam
-    num_episodes = 200  # 1000
+    num_episodes = 1000  # 1000
     # state_dim = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -728,7 +738,7 @@ def train():
                 Experience(torch.tensor(state), action_tensor, torch.tensor(next_state), torch.tensor([reward])))
             # memory.push(Experience(state, action_tensor, next_state, torch.tensor(reward)))
             # print ('MEMORY',memory)
-            update_UI(update_state, action, last_move_type)
+            # update_UI(update_state, action, last_move_type)
 
             state = next_state
 
@@ -827,7 +837,7 @@ def test():
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
     lr = 0.001
-    num_episodes = 10  # 1000
+    num_episodes = 1000  # 1000
     # state_dim = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -869,7 +879,7 @@ def test():
 
             next_state, update_state = em.get_state(timestep)
             # print ('Next State in the form of feature vector',next_state)
-            update_UI(update_state, action, last_move_type, episode, ghost_win, busters_win)
+            # update_UI(update_state, action, last_move_type, episode, ghost_win, busters_win)
             state = next_state
             # print(len(state))
             if em.is_done(timestep) == 2:
@@ -897,7 +907,7 @@ def test():
 
 
 # train()
-# test()
+test()
 
 
 #######################SERVER#########################
@@ -917,64 +927,64 @@ firebase_admin.initialize_app(cred, {
 ref = db.reference('/ghostbuster')
 
 
-class RequestHandler(BaseHTTPRequestHandler):
-
-  def _send_cors_headers(self):
-      """ Sets headers required for CORS """
-      self.send_header("Access-Control-Allow-Origin", "*")
-      self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-      self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
-
-  def send_dict_response(self, d):
-      """ Sends a dictionary (JSON) back to the client """
-      self.wfile.write(bytes(dumps(d), "utf8"))
-
-  def do_OPTIONS(self):
-      self.send_response(200)
-      self._send_cors_headers()
-      self.end_headers()
-
-  def do_GET(self):
-      # if(self.path):
-      print(self.path)
-      if self.path == "/start":
-        # test()
-        print("")
-        # train()
-      elif self.path == "/train":
-          train()
-      elif self.path == "/test":
-          test()
-
-      self.send_response(200)
-      self._send_cors_headers()
-      self.end_headers()
-
-      response = {}
-      response["status"] = "OK"
-      self.send_dict_response(response)
-
-
-  def do_POST(self):
-      print(self.path)
-      self.send_response(200)
-      self._send_cors_headers()
-      self.send_header("Content-Type", "application/json")
-      self.end_headers()
-
-      dataLength = int(self.headers["Content-Length"])
-      data = self.rfile.read(dataLength)
-
-      print(data)
-
-      response = {}
-      response["status"] = "OK"
-      self.send_dict_response(response)
-
-
-print("Starting server")
-
-
-httpd = HTTPServer(("127.0.0.1", 8000), RequestHandler)
-print("Hosting server on port 8000")
-httpd.serve_forever()
+# class RequestHandler(BaseHTTPRequestHandler):
+#
+#   def _send_cors_headers(self):
+#       """ Sets headers required for CORS """
+#       self.send_header("Access-Control-Allow-Origin", "*")
+#       self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+#       self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
+#
+#   def send_dict_response(self, d):
+#       """ Sends a dictionary (JSON) back to the client """
+#       self.wfile.write(bytes(dumps(d), "utf8"))
+#
+#   def do_OPTIONS(self):
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.end_headers()
+#
+#   def do_GET(self):
+#       # if(self.path):
+#       print(self.path)
+#       if self.path == "/start":
+#         # test()
+#         print("")
+#         # train()
+#       elif self.path == "/train":
+#           train()
+#       elif self.path == "/test":
+#           test()
+#
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.end_headers()
+#
+#       response = {}
+#       response["status"] = "OK"
+#       self.send_dict_response(response)
+#
+#
+#   def do_POST(self):
+#       print(self.path)
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.send_header("Content-Type", "application/json")
+#       self.end_headers()
+#
+#       dataLength = int(self.headers["Content-Length"])
+#       data = self.rfile.read(dataLength)
+#
+#       print(data)
+#
+#       response = {}
+#       response["status"] = "OK"
+#       self.send_dict_response(response)
+#
+#
+# print("Starting server")
+#
+#
+# httpd = HTTPServer(("127.0.0.1", 8000), RequestHandler)
+# print("Hosting server on port 8000")
+# httpd.serve_forever()
