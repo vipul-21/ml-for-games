@@ -133,7 +133,7 @@ class Agent():
             returned_states = policy_net(state)
             max_value = float("-inf")
             max_index = 0
-            print("POSSIBLE MOVES: ", possible_moves)
+            # print("POSSIBLE MOVES: ", possible_moves)
             possible_moves_indexes = []
             possible_moves_type = []
             chosen_mode = []
@@ -147,7 +147,7 @@ class Agent():
                     max_value = value
                     max_index = index
             max_index_tensor = torch.tensor(max_index)
-            print(chosen_mode)
+            # print(chosen_mode)
 
             # print ('Result',max_index_tensor)
             return max_index_tensor,chosen_mode
@@ -460,7 +460,7 @@ class Environment():
 
                         if (self.ghostbuster_resources[index][d[x[1][k]]] > 0):
                             new_pm.append((x[0], x[1][k]))
-            print("Detective:", index, "moves : ", new_pm, self.ghostbuster_resources[index])
+            # print("Detective:", index, "moves : ", new_pm, self.ghostbuster_resources[index])
 
             if (len(new_pm) > 0):
                 random_move = random.choice(new_pm)
@@ -664,7 +664,7 @@ def train():
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
     lr = 0.001 #learning rate for adam
-    num_episodes = 200  # 1000
+    num_episodes = 1000  # 1000
     # state_dim = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -728,7 +728,7 @@ def train():
                 Experience(torch.tensor(state), action_tensor, torch.tensor(next_state), torch.tensor([reward])))
             # memory.push(Experience(state, action_tensor, next_state, torch.tensor(reward)))
             # print ('MEMORY',memory)
-            update_UI(update_state, action, last_move_type)
+            # update_UI(update_state, action, last_move_type)
 
             state = next_state
 
@@ -794,7 +794,7 @@ def update_UI(data, last_move, last_move_type, epoch, ghost_win, busters_win): #
     # e = data[2][4]
     #
     # round  = data[4]
-    print("Round :", data[4], data[2][0],data[2][1],data[2][2],data[2][3],data[2][4], last_move, last_move_type)
+    # print("Round :", data[4], data[2][0],data[2][1],data[2][2],data[2][3],data[2][4], last_move, last_move_type)
     ref.update({
         'ghost': ghost_pos,
         'ghostLastMove': last_move_type,
@@ -827,7 +827,7 @@ def test():
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
     lr = 0.001
-    num_episodes = 10  # 1000
+    num_episodes = 200  # 1000
     # state_dim = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -869,18 +869,18 @@ def test():
 
             next_state, update_state = em.get_state(timestep)
             # print ('Next State in the form of feature vector',next_state)
-            update_UI(update_state, action, last_move_type, episode, ghost_win, busters_win)
+            # update_UI(update_state, action, last_move_type, episode, ghost_win, busters_win)
             state = next_state
             # print(len(state))
             if em.is_done(timestep) == 2:
                 ghost_win += 1
-                performance.append(busters_win - ghost_win)
+                performance.append(ghost_win - busters_win)
                 game_number.append(episode)
                 break
 
             elif (em.is_done(timestep) == 1):
                 busters_win += 1
-                performance.append(busters_win - ghost_win)
+                performance.append(ghost_win - busters_win)
                 game_number.append(episode)
                 # plot(episode_durations, 100)
                 break
@@ -897,84 +897,84 @@ def test():
 
 
 # train()
-# test()
+test()
 
 
 #######################SERVER#########################
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from json import dumps
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import db
-
-""" The HTTP request handler """
-
-cred = credentials.Certificate('firebase-adminsdk.json')
-# Initialize the app with a service account, granting admin privileges
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://hackathon-b4e45.firebaseio.com/'
-})
-ref = db.reference('/ghostbuster')
-
-
-class RequestHandler(BaseHTTPRequestHandler):
-
-  def _send_cors_headers(self):
-      """ Sets headers required for CORS """
-      self.send_header("Access-Control-Allow-Origin", "*")
-      self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-      self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
-
-  def send_dict_response(self, d):
-      """ Sends a dictionary (JSON) back to the client """
-      self.wfile.write(bytes(dumps(d), "utf8"))
-
-  def do_OPTIONS(self):
-      self.send_response(200)
-      self._send_cors_headers()
-      self.end_headers()
-
-  def do_GET(self):
-      # if(self.path):
-      print(self.path)
-      if self.path == "/start":
-        # test()
-        print("")
-        # train()
-      elif self.path == "/train":
-          train()
-      elif self.path == "/test":
-          test()
-
-      self.send_response(200)
-      self._send_cors_headers()
-      self.end_headers()
-
-      response = {}
-      response["status"] = "OK"
-      self.send_dict_response(response)
-
-
-  def do_POST(self):
-      print(self.path)
-      self.send_response(200)
-      self._send_cors_headers()
-      self.send_header("Content-Type", "application/json")
-      self.end_headers()
-
-      dataLength = int(self.headers["Content-Length"])
-      data = self.rfile.read(dataLength)
-
-      print(data)
-
-      response = {}
-      response["status"] = "OK"
-      self.send_dict_response(response)
-
-
-print("Starting server")
-
-
-httpd = HTTPServer(("127.0.0.1", 8000), RequestHandler)
-print("Hosting server on port 8000")
-httpd.serve_forever()
+# from http.server import BaseHTTPRequestHandler, HTTPServer
+# from json import dumps
+# import firebase_admin
+# from firebase_admin import credentials
+# from firebase_admin import db
+#
+# """ The HTTP request handler """
+#
+# cred = credentials.Certificate('firebase-adminsdk.json')
+# # Initialize the app with a service account, granting admin privileges
+# firebase_admin.initialize_app(cred, {
+#     'databaseURL': 'https://hackathon-b4e45.firebaseio.com/'
+# })
+# ref = db.reference('/ghostbuster')
+#
+#
+# class RequestHandler(BaseHTTPRequestHandler):
+#
+#   def _send_cors_headers(self):
+#       """ Sets headers required for CORS """
+#       self.send_header("Access-Control-Allow-Origin", "*")
+#       self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+#       self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
+#
+#   def send_dict_response(self, d):
+#       """ Sends a dictionary (JSON) back to the client """
+#       self.wfile.write(bytes(dumps(d), "utf8"))
+#
+#   def do_OPTIONS(self):
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.end_headers()
+#
+#   def do_GET(self):
+#       # if(self.path):
+#       print(self.path)
+#       if self.path == "/start":
+#         # test()
+#         print("")
+#         # train()
+#       elif self.path == "/train":
+#           train()
+#       elif self.path == "/test":
+#           test()
+#
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.end_headers()
+#
+#       response = {}
+#       response["status"] = "OK"
+#       self.send_dict_response(response)
+#
+#
+#   def do_POST(self):
+#       print(self.path)
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.send_header("Content-Type", "application/json")
+#       self.end_headers()
+#
+#       dataLength = int(self.headers["Content-Length"])
+#       data = self.rfile.read(dataLength)
+#
+#       print(data)
+#
+#       response = {}
+#       response["status"] = "OK"
+#       self.send_dict_response(response)
+#
+#
+# print("Starting server")
+#
+#
+# httpd = HTTPServer(("127.0.0.1", 8000), RequestHandler)
+# print("Hosting server on port 8000")
+# httpd.serve_forever()
