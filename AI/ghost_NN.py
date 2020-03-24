@@ -523,7 +523,7 @@ class Environment():
     def take_action(self, action, timestep):
         # update Mr. X's position to simulate his taking an action
         self.ghost_posititon = action
-        if timestep in [ 8, 18, 24]:
+        if timestep in [3, 8, 12, 18, 24]:
             self.ghost_posititon_avail = self.ghost_posititon
         # print(self.ghost_posititon_avail)
         if self.ghost_posititon_avail is not None:
@@ -674,7 +674,7 @@ def train():
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
     lr = 0.001 #learning rate for adam
-    num_episodes = 1000  # 1000
+    num_episodes = 200  # 1000
     # state_dim = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -913,18 +913,18 @@ test()
 #######################SERVER#########################
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from json import dumps
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import db
-
-""" The HTTP request handler """
-
-cred = credentials.Certificate('firebase-adminsdk.json')
-# Initialize the app with a service account, granting admin privileges
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://hackathon-b4e45.firebaseio.com/'
-})
-ref = db.reference('/ghostbuster')
+# import firebase_admin
+# from firebase_admin import credentials
+# from firebase_admin import db
+#
+# """ The HTTP request handler """
+#
+# cred = credentials.Certificate('firebase-adminsdk.json')
+# # Initialize the app with a service account, granting admin privileges
+# firebase_admin.initialize_app(cred, {
+#     'databaseURL': 'https://hackathon-b4e45.firebaseio.com/'
+# })
+# ref = db.reference('/ghostbuster')
 
 
 # class RequestHandler(BaseHTTPRequestHandler):
