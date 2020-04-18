@@ -12,6 +12,7 @@ class Agent():
 
     def select_action(self, state, policy_net, possible_moves):
         # policy network is the deep Q network that we train to get the optimal policy
+
         rate = self.strategy.get_exploration_rate(self.current_step)
         # print("Exploration rate: ", rate)
         self.current_step += 1

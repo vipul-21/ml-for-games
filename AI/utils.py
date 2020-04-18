@@ -41,8 +41,10 @@ def generate_feature_space(inital_st):
     feature_space.extend(ghostbuster_tic[2])
     feature_space.extend(ghostbuster_tic[3])
     feature_space.extend(ghostbuster_tic[4])
-    feature_space.extend(inital_st[4])
-    feature_space.extend(one_hot_encode(inital_st[5], 1, 5)[0])
+    feature_space.append(inital_st[4])
+
+    # feature_space.extend(inital_st[4])
+    # feature_space.extend(one_hot_encode(inital_st[5], 1, 5)[0])
     # print(feature_space)
     # print(len(feature_space))
     return feature_space
@@ -61,8 +63,8 @@ def plot_training(rates, performance):
     # naming the x axis
     plt.xlabel('Explore')
     # naming the y axis
-    plt.ylabel('Ghostbuster Wins - ghost Wins')
-
+    plt.ylabel('ghost Wins - ghostbuster Wins')
+    plt.xlim(1, 0)
     # giving a title to the graph
     plt.title('Training')
 
@@ -81,7 +83,7 @@ def plot_testing(performance, games):
     plt.xlabel('Game Number')
 
     # naming the y axis
-    plt.ylabel('Ghostbuster Wins Wins - Ghost Wins')
+    plt.ylabel('Ghost Wins Wins - Ghostbuster Wins')
 
     # giving a title to my graph
     plt.title('Testing')

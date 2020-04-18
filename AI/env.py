@@ -285,13 +285,14 @@ class Environment():
                       )
 
         self.ghost_posititon = ghost_posititon
-        self.ghost_posititon_avail = None
+        self.ghost_posititon_avail = ghost_posititon
         self.ghostbuster_positions = ghostbuster_positions
-        self.ghost_resources = ghost_resources
+        self.ghost_resources = 5
         # self.ghostbuster_resources = ghostbuster_resources
         self.ghostbuster_resources = [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]]
         self.done = False
-        self.possible_moves = self.board[self.ghost_posititon]
+        self.possible_moves = [self.board[val] for val in ghostbuster_positions]
+        # self.possible_moves = self.board[self.ghost_posititon]
 
 
     def take_action_detectives_random(self):
@@ -357,7 +358,9 @@ class Environment():
         return (res_state_loc, res_state_resources)
 
     def get_state(self, round_number):
-        in_state = [self.ghost_posititon, round_number % 5, self.ghostbuster_positions, self.ghostbuster_resources, [1, 1, 1, 1, 1],1]
+        # in_state = [self.ghost_posititon, self.ghost_resources, self.ghostbuster_positions, self.ghostbuster_resources, round_number]
+
+        in_state = [self.ghost_posititon, self.ghost_resources, self.ghostbuster_positions, self.ghostbuster_resources,round_number]
         # print("1", in_state)
         state = generate_feature_space(in_state)
         # print("2")
@@ -370,10 +373,46 @@ class Environment():
     def num_actions_available(self):
         return len(self.possible_moves)
 
-    def take_action(self, action, timestep):
+    def take_action(self, action, timestep, choices):
         # update Mr. X's position to simulate his taking an action
-        self.ghost_posititon = action
-        # if timestep in [3, 8, 12, 18, 24]:
+        next_move =  random.choice(self.board[self.ghost_posititon])
+        self.ghost_posititon_avail = next_move
+        if timestep  in [3, 8, 12, 18, 24]:
+            self.ghost_posititon = next_move[0]
+
+        d = {
+            "WALK": 0,
+            "SEWAGE": 1,
+            "TUNNEL": 2,
+            "BLACK": 3
+        }
+        # print(self.ghostbuster_resources)
+        for index, each_detective in enumerate(self.ghostbuster_positions):
+            pm = self.board[each_detective]
+            new_pm = []
+            # for x in pm:
+            #     for k in range(0, len(x[1])):
+            #         if (x[1][k] != "BLACK"):
+            #
+            #             if (self.ghostbuster_resources[index][d[x[1][k]]] > 0):
+            #                 new_pm.append((x[0], x[1][k]))
+            # print("Detective:", index, "moves : ", new_pm, self.ghostbuster_resources[index])
+
+            if (action[index] > 0):
+                random_move = action[index]
+
+                # print(random_move)
+                if 'WALK' in choices[index]:
+                    resource_used = 0
+
+                elif 'SEWAGE' in choices[index]:
+                    resource_used = 1
+
+                else:
+                    resource_used = 2
+
+                self.ghostbuster_positions[index] = random_move
+                self.ghostbuster_resources[index][resource_used] -= 1
         #     self.ghost_posititon_avail = self.ghost_posititon
         # # print(self.ghost_posititon_avail)
         # if self.ghost_posititon_avail is not None:
@@ -382,7 +421,7 @@ class Environment():
         #     self.take_action_detectives_random()
 
 
-        self.take_action_detectives_random()
+        # self.take_action_detectives_random()
         # detective_position_average = 0
         # for each_detective in self.ghostbuster_positions:
         #   detective_position_average += each_detective
@@ -391,16 +430,16 @@ class Environment():
         # reward = self.getdistance(self.ghost_posititon, detective_position_average)
         self.done = self.is_done(timestep)
         if self.done == 1:
-            return -100
-        elif (self.done == 2):
             return 100
+        elif (self.done == 2):
+            return -100
         else:
             return 0
 
     def is_done(self, timestep):
         # game ends when either one detective is at the place of Mr. X
         for each_detective in self.ghostbuster_positions:
-            if each_detective == self.ghost_posititon:
+            if each_detective == self.ghost_posititon_avail:
                 return 1
         if (timestep == 24):
             return 2
@@ -410,6 +449,6 @@ class Environment():
     def winner(self):
 
         for each_ghostbuster in self.ghostbuster_positions:
-            if each_ghostbuster == self.ghost_posititon:
+            if each_ghostbuster == self.ghost_posititon_avail:
                 return False
         return True

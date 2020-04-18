@@ -17,9 +17,9 @@ from env import *
 from ghost_buster_dqn import *
 from q_learning.QValues import *
 from q_learning.ReplayMemory import *
-from strategy.agent import *
+from strategy.ghostnbuster_agent import *
 from strategy.epsilon_greedy import *
-
+from utils import plot_testing
 Experience = namedtuple('Experience', ('state', 'action', 'next_state', 'reward'))
 
 ############################TRAIN##########################
@@ -36,13 +36,13 @@ def train():
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
     lr = 0.001 #learning rate for adam
-    num_episodes = 1000  # 1000
+    num_episodes = 200  # 1000
     # state_dim = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # start_state = [26, 5, [34, 29, 117, 174, 112], [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], 1]
-    start_state = [100, 5, [41, 112, 198, 141, 174], [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], [1, 0, 0, 0, 0], 1]
+    start_state = [100, 3, [41, 112, 198, 141, 174], [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], 1]
     start_feature = generate_feature_space(start_state)
     # print ('Length',len(start_feature))
     # print ('Without tensor',start_feature)
@@ -85,12 +85,15 @@ def train():
         for timestep in range(25):
             # print ('Timestep-->', timestep, ' x position', em.ghost_posititon)
             # print ('ghostbuster Position', em.ghostbuster_positions)
-            action_tensor, rate, last_move_type = agent.select_action(state, policy_net, em.board[em.ghost_posititon])
+            possible_moves = [em.board[val] for val in em.ghostbuster_positions]
+            action_tensor, rate, choices = agent.select_action(state, policy_net, possible_moves)
+
+            # action_tensor, rate, last_move_type = agent.select_action(state, policy_net, em.board[em.ghost_posititon])
 
             action = action_tensor.tolist()
             # print('Move to take for Ghost', agent.mappings[action[0]])
 
-            reward = em.take_action(action, timestep)
+            reward = em.take_action(action, timestep, choices)
             # print ('Reward',reward)
 
             next_state, update_state = em.get_state(timestep)
@@ -148,7 +151,7 @@ def train():
     print(performance)
     print(exploration_rate)
     # plot_training(exploration_rate, performance)
-    torch.save(policy_net, 'ghostbuster.pth')
+    # torch.save(policy_net, 'ghostbuster.pth')
 
 ############################TEST##########################
 def update_UI(data, last_move, last_move_type, epoch, ghost_win, busters_win): #TODO : Update firebase for the positions, tokens and round
@@ -199,14 +202,14 @@ def test():
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
     lr = 0.001
-    num_episodes = 1000  # 1000
+    num_episodes = 200  # 1000
     # state_dim = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # start_state = [118, 5, [34, 29, 117, 174, 112], [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], 1]
     # start_state = [154, 5, [34, 29, 117, 174, 112], [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], 1]
-    start_state = [118, 5, [34, 29, 117, 174, 112], [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], [1, 0, 0, 0, 0], 1]
+    start_state = [118, 3, [34, 29, 117, 174, 112], [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], 1]
 
     start_feature = generate_feature_space(start_state)
 
@@ -244,7 +247,7 @@ def test():
 
             next_state, update_state = em.get_state(timestep)
             # print ('Next State in the form of feature vector',next_state)
-            update_UI(update_state, action, last_move_type, episode, ghost_win, busters_win)
+            # update_UI(update_state, action, last_move_type, episode, ghost_win, busters_win)
             state = next_state
             # print(len(state))
             if em.is_done(timestep) == 2:
@@ -270,83 +273,83 @@ def test():
     print(game_number)
     # plot_testing(performance, game_number)
 
-# train()
+train()
 # test()
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from json import dumps
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import db
-
-""" The HTTP request handler """
-
-cred = credentials.Certificate('firebase-adminsdk.json')
-# Initialize the app with a service account, granting admin privileges
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://hackathon-b4e45.firebaseio.com/'
-})
-ref = db.reference('/ghostbuster')
-
-
-class RequestHandler(BaseHTTPRequestHandler):
-
-  def _send_cors_headers(self):
-      """ Sets headers required for CORS """
-      self.send_header("Access-Control-Allow-Origin", "*")
-      self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-      self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
-
-  def send_dict_response(self, d):
-      """ Sends a dictionary (JSON) back to the client """
-      self.wfile.write(bytes(dumps(d), "utf8"))
-
-  def do_OPTIONS(self):
-      self.send_response(200)
-      self._send_cors_headers()
-      self.end_headers()
-
-  def do_GET(self):
-      # if(self.path):
-      print(self.path)
-      if self.path == "/start":
-        # test()
-        print("")
-        # train()
-      elif self.path == "/train":
-          train()
-      elif self.path == "/test":
-          test()
-
-      self.send_response(200)
-      self._send_cors_headers()
-      self.end_headers()
-
-      response = {}
-      response["status"] = "OK"
-      self.send_dict_response(response)
-
-
-  def do_POST(self):
-      # print(self.path)
-      self.send_response(200)
-      self._send_cors_headers()
-      self.send_header("Content-Type", "application/json")
-      self.end_headers()
-
-      dataLength = int(self.headers["Content-Length"])
-      data = self.rfile.read(dataLength)
-
-      # print(data)
-
-      response = {}
-      response["status"] = "OK"
-      self.send_dict_response(response)
-
-
-print("Starting server")
-
-
-httpd = HTTPServer(("127.0.0.1", 8000), RequestHandler)
-print("Hosting server on port 8000")
-httpd.serve_forever()
+# from http.server import BaseHTTPRequestHandler, HTTPServer
+# from json import dumps
+# import firebase_admin
+# from firebase_admin import credentials
+# from firebase_admin import db
+#
+# """ The HTTP request handler """
+#
+# cred = credentials.Certificate('firebase-adminsdk.json')
+# # Initialize the app with a service account, granting admin privileges
+# firebase_admin.initialize_app(cred, {
+#     'databaseURL': 'https://hackathon-b4e45.firebaseio.com/'
+# })
+# ref = db.reference('/ghostbuster')
+#
+#
+# class RequestHandler(BaseHTTPRequestHandler):
+#
+#   def _send_cors_headers(self):
+#       """ Sets headers required for CORS """
+#       self.send_header("Access-Control-Allow-Origin", "*")
+#       self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+#       self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
+#
+#   def send_dict_response(self, d):
+#       """ Sends a dictionary (JSON) back to the client """
+#       self.wfile.write(bytes(dumps(d), "utf8"))
+#
+#   def do_OPTIONS(self):
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.end_headers()
+#
+#   def do_GET(self):
+#       # if(self.path):
+#       print(self.path)
+#       if self.path == "/start":
+#         # test()
+#         print("")
+#         # train()
+#       elif self.path == "/train":
+#           train()
+#       elif self.path == "/test":
+#           test()
+#
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.end_headers()
+#
+#       response = {}
+#       response["status"] = "OK"
+#       self.send_dict_response(response)
+#
+#
+#   def do_POST(self):
+#       # print(self.path)
+#       self.send_response(200)
+#       self._send_cors_headers()
+#       self.send_header("Content-Type", "application/json")
+#       self.end_headers()
+#
+#       dataLength = int(self.headers["Content-Length"])
+#       data = self.rfile.read(dataLength)
+#
+#       # print(data)
+#
+#       response = {}
+#       response["status"] = "OK"
+#       self.send_dict_response(response)
+#
+#
+# print("Starting server")
+#
+#
+# httpd = HTTPServer(("127.0.0.1", 8000), RequestHandler)
+# print("Hosting server on port 8000")
+# httpd.serve_forever()
