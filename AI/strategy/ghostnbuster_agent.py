@@ -44,49 +44,41 @@ class Agent():
                 possible_moves_indexes = []
                 possible_moves_type = []
                 chosen_mode = []
-                for i in possible_moves:
-                    possible_moves_indexes.append(i[0])
-                    possible_moves_type.append(i[1])
-
-                for index, value in enumerate(returned_states):
-                    if (index in possible_moves_indexes and value > max_value):
+                for first in possible_moves:
+                    possible_moves_indexes.append([])
+                    possible_moves_type.append([])
+                    for val in first:
+                        possible_moves_indexes[-1].append(val[0])
+                        possible_moves_type[-1].append(val[1])
+                all_actions = []
+                choices = []
+                for i, gb in enumerate(possible_moves):
+                    if gb != -1:
+                        max_value = float('-inf')
+                        max_index = -1
+                        for index, value in enumerate(returned_states):
+                            if (index in possible_moves_indexes[i] and value > max_value):
                         # chosen_mode = possible_moves_type[possible_moves_indexes.index(index)]
-                        max_value = value
-                        max_index = index
-                max_index_tensor = torch.tensor(max_index).to(self.device)
+                                max_value = value
+                                max_index = index
+                        all_actions.append(max_index)
+                        if max_index > -1:
+                            choices.append(possible_moves_type[i][possible_moves_indexes[i].index(max_index)])
+                        else:
+                            choices.append("")
+
+                    else:
+                        all_actions.append(-1)
+                        choices.append("")
                 # result = policy_net(state).argmax(dim=-1).to(self.device)
                 # print ('RESULT', max_index_tensor)
-                return max_index_tensor, rate, chosen_mode
+            return torch.tensor(all_actions).to(self.device), rate, choices
                 # return policy_net(torch.tensor(state)).argmax(dim=1).to(self.device) # exploit
 
-    def select(self):
-        res_state_loc = []
-        res_state_resources = self.ghostbuster_resources
-
-        for count, det in enumerate(self.ghostbuster_positions):
-            moves = self.board[int(det)]
-            min_dist_node = -1
-            min_dist_val = float("inf")
-
-            for move in moves:
-                val = self.getdistance(self.ghost_posititon_avail, move[0])
-
-                if (val < min_dist_val):
-                    min_dist_node = move
-                    min_dist_val = val
-
-            res_state_loc.append(min_dist_node[0])
-            # print("COUNT: ", count)
-            if (min_dist_node[1][0] == 'WALK'):
-                res_state_resources[count][0] = max(res_state_resources[count][0] - 1, 0)
-
-            elif (min_dist_node[1][0] == 'SEWAGE'):
-                res_state_resources[count][1] = max(res_state_resources[count][1] - 1, 0)
-            else:
-                res_state_resources[count][2] = max(res_state_resources[count][2] - 1, 0)
-        return (res_state_loc, res_state_resources)
 
     def select_action_testing(self, state, policy_net, possible_moves):
+        action = []
+        choices = []
         with torch.no_grad():
             # print(policy_net(state))
             returned_states = policy_net(state)
@@ -96,21 +88,39 @@ class Agent():
             possible_moves_indexes = []
             possible_moves_type = []
             chosen_mode = []
-            for i in possible_moves:
-                possible_moves_indexes.append(i[0])
-                possible_moves_type.append(i[1])
+            for first in possible_moves:
+                possible_moves_indexes.append([])
+                possible_moves_type.append([])
+                for val in first:
+                    possible_moves_indexes[-1].append(val[0])
+                    possible_moves_type[-1].append(val[1])
+            all_actions = []
+            # for index, value in enumerate(returned_states):
+            #     if (index in possible_moves_indexes and value > max_value):
+            #         chosen_mode = possible_moves_type[possible_moves_indexes.index(index)]
+            #         max_value = value
+            #         max_index = index
+            # max_index_tensor = torch.tensor(max_index)
+            for i, gb in enumerate(possible_moves):
+                if gb != -1:
+                    max_value = float('-inf')
+                    max_index = -1
+                    for index, value in enumerate(returned_states):
+                        if (index in possible_moves_indexes[i] and value > max_value):
+                            # chosen_mode = possible_moves_type[possible_moves_indexes.index(index)]
+                            max_value = value
+                            max_index = index
+                    all_actions.append(max_index)
+                    if max_index > -1:
+                        choices.append(possible_moves_type[i][possible_moves_indexes[i].index(max_index)])
+                    else:
+                        choices.append("")
 
-            for index, value in enumerate(returned_states):
-                if (index in possible_moves_indexes and value > max_value):
-                    chosen_mode = possible_moves_type[possible_moves_indexes.index(index)]
-                    max_value = value
-                    max_index = index
-            max_index_tensor = torch.tensor(max_index)
-            # print(chosen_mode)
-
-            # print ('Result',max_index_tensor)
-            return max_index_tensor,chosen_mode
-            # return policy_net(torch.tensor(state)).argmax(dim=1).to(self.device) # exploit
+                else:
+                    all_actions.append(-1)
+                    choices.append("")
+            return torch.tensor(all_actions).to(self.device), choices
+                # return policy_net(torch.tensor(state)).argmax(dim=1).to(self.device) # exploit
 
 
 

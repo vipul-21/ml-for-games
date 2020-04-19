@@ -291,7 +291,7 @@ class Environment():
         # self.ghostbuster_resources = ghostbuster_resources
         self.ghostbuster_resources = [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]]
         self.done = False
-        self.possible_moves = [self.board[val] for val in ghostbuster_positions]
+        self.possible_moves = self.get_possible_moves()
         # self.possible_moves = self.board[self.ghost_posititon]
 
 
@@ -376,9 +376,10 @@ class Environment():
     def take_action(self, action, timestep, choices):
         # update Mr. X's position to simulate his taking an action
         next_move =  random.choice(self.board[self.ghost_posititon])
-        self.ghost_posititon_avail = next_move
-        if timestep  in [3, 8, 12, 18, 24]:
-            self.ghost_posititon = next_move[0]
+        self.ghost_posititon_avail = next_move[0]
+        # if timestep  in [3, 8, 12, 18, 24]:
+        # if timestep  in [1, 3, 5, 8, 10, 12, 15, 18, 20, 24]:
+        self.ghost_posititon = next_move[0]
 
         d = {
             "WALK": 0,
@@ -436,6 +437,51 @@ class Environment():
         else:
             return 0
 
+    def get_possible_moves(self):
+        new_possible_moves = []
+        res_state_loc = []
+        res_state_resources = self.ghostbuster_resources
+        d = {
+            "WALK": 0,
+            "SEWAGE": 1,
+            "TUNNEL": 2,
+            "BLACK": 3
+        }
+        # print(self.ghostbuster_resources)
+        for index, each_detective in enumerate(self.ghostbuster_positions):
+            pm = self.board[each_detective]
+            new_pm = []
+            for x in pm:
+                for k in range(0, len(x[1])):
+                    if (x[1][k] != "BLACK"):
+                        if (self.ghostbuster_resources[index][d[x[1][k]]] > 0):
+                            new_pm.append((x[0], x[1][k]))
+            new_possible_moves.append(new_pm)
+            # print("Detective:", index, "moves : ", new_pm, self.ghostbuster_resources[index])
+        return new_possible_moves
+        # for count, det in enumerate(self.ghostbuster_positions):
+        #     moves = self.board[int(det)]
+        #     min_dist_node = -1
+        #     min_dist_val = float("inf")
+        #
+        #     for move in moves:
+        #         val = self.getdistance(self.ghost_posititon_avail, move[0])
+        #
+        #         if (val < min_dist_val):
+        #             min_dist_node = move
+        #             min_dist_val = val
+        #
+        #     res_state_loc.append(min_dist_node[0])
+        #     # print("COUNT: ", count)
+        #     if (min_dist_node[1][0] == 'WALK'):
+        #         res_state_resources[count][0] = max(res_state_resources[count][0] - 1, 0)
+        #
+        #     elif (min_dist_node[1][0] == 'SEWAGE'):
+        #         res_state_resources[count][1] = max(res_state_resources[count][1] - 1, 0)
+        #     else:
+        #         res_state_resources[count][2] = max(res_state_resources[count][2] - 1, 0)
+        # return (res_state_loc, res_state_resources)
+
     def is_done(self, timestep):
         # game ends when either one detective is at the place of Mr. X
         for each_detective in self.ghostbuster_positions:
@@ -452,3 +498,42 @@ class Environment():
             if each_ghostbuster == self.ghost_posititon_avail:
                 return False
         return True
+
+    def take_action_against(self, action_ghost, choices_ghost, action_ghostbuster, choices_ghostbuster, timestep):
+        next_move =  random.choice(self.board[self.ghost_posititon])
+        self.ghost_posititon_avail = next_move[0]
+        # if timestep  in [3, 8, 12, 18, 24]:
+        # if timestep  in [1, 3, 5, 8, 10, 12, 15, 18, 20, 24]:
+        self.ghost_posititon = next_move[0]
+
+        d = {
+            "WALK": 0,
+            "SEWAGE": 1,
+            "TUNNEL": 2,
+            "BLACK": 3
+        }
+        # print(self.ghostbuster_resources)
+        for index, each_detective in enumerate(self.ghostbuster_positions):
+            pm = self.board[each_detective]
+            new_pm = []
+            if (action_ghostbuster[index] > 0):
+                random_move = action_ghostbuster[index]
+                if 'WALK' in choices_ghostbuster[index]:
+                    resource_used = 0
+
+                elif 'SEWAGE' in choices_ghostbuster[index]:
+                    resource_used = 1
+
+                else:
+                    resource_used = 2
+
+                self.ghostbuster_positions[index] = random_move
+                self.ghostbuster_resources[index][resource_used] -= 1
+
+        self.done = self.is_done(timestep)
+        if self.done == 1:
+            return 100
+        elif (self.done == 2):
+            return -100
+        else:
+            return 0

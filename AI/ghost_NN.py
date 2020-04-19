@@ -275,8 +275,8 @@ def test():
     plot_testing(performance, game_number)
 
 
-# train()
-test()
+train()
+# test()Sb
 
 #
 # #######################SERVER#########################

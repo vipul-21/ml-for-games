@@ -63,7 +63,7 @@ def plot_training(rates, performance):
     # naming the x axis
     plt.xlabel('Explore')
     # naming the y axis
-    plt.ylabel('ghost Wins - ghostbuster Wins')
+    plt.ylabel('Ghostbuster Wins- Ghost Wins')
     plt.xlim(1, 0)
     # giving a title to the graph
     plt.title('Training')
@@ -83,7 +83,7 @@ def plot_testing(performance, games):
     plt.xlabel('Game Number')
 
     # naming the y axis
-    plt.ylabel('Ghost Wins Wins - Ghostbuster Wins')
+    plt.ylabel('Ghostbuster Wins- Ghost Wins ')
 
     # giving a title to my graph
     plt.title('Testing')

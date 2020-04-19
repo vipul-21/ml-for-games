@@ -2,7 +2,7 @@ from collections import defaultdict
 import random
 import torch
 
-class Agent():
+class Agent_ghost():
     def __init__(self, strategy, num_actions, device):
         self.current_step = 0
         self.strategy = strategy
