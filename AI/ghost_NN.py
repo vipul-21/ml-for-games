@@ -253,13 +253,13 @@ def test():
             # print(len(state))
             if em.is_done(timestep) == 2:
                 ghost_win += 1
-                performance.append(ghost_win - busters_win )
+                performance.append(busters_win - ghost_win )
                 game_number.append(episode)
                 break
 
             elif (em.is_done(timestep) == 1):
                 busters_win += 1
-                performance.append(ghost_win - busters_win )
+                performance.append(busters_win - ghost_win)
                 game_number.append(episode)
                 # plot(episode_durations, 100)
                 break

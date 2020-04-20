@@ -38,7 +38,7 @@ def train():
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
     lr = 0.001 #learning rate for adam
-    num_episodes = 5000  # 1000
+    num_episodes = 1000  # 1000
     # state_dim = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -156,7 +156,7 @@ def train():
     print(performance)
     print(exploration_rate)
     plot_training(exploration_rate, performance)
-    torch.save(policy_net, 'ghostbuster_temp.pth')
+    torch.save(policy_net, 'ghostbuster_1000.pth')
 
 ############################TEST##########################
 def update_UI(data, last_move, last_move_type, epoch, ghost_win, busters_win): #TODO : Update firebase for the positions, tokens and round
@@ -193,7 +193,7 @@ def update_UI(data, last_move, last_move_type, epoch, ghost_win, busters_win): #
     # print(r)
     # status = r.status
     # print("Updated:" % status)
-    time.sleep(4)
+    time.sleep(1)
 
 def test():
     model = torch.load('ghostbuster_temp.pth')
@@ -206,7 +206,7 @@ def test():
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
     lr = 0.001
-    num_episodes = 200  # 1000
+    num_episodes = 1000  # 1000
     # state_dim = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -279,91 +279,10 @@ def test():
     plot_testing(performance, game_number)
 
 
-
-#
-# from http.server import BaseHTTPRequestHandler, HTTPServer
-# from json import dumps
-# import firebase_admin
-# from firebase_admin import credentials
-# from firebase_admin import db
-#
-# """ The HTTP request handler """
-#
-# cred = credentials.Certificate('firebase-adminsdk.json')
-# # Initialize the app with a service account, granting admin privileges
-# firebase_admin.initialize_app(cred, {
-#     'databaseURL': 'https://hackathon-b4e45.firebaseio.com/'
-# })
-# ref = db.reference('/ghostbuster')
-#
-#
-# class RequestHandler(BaseHTTPRequestHandler):
-#
-#   def _send_cors_headers(self):
-#       """ Sets headers required for CORS """
-#       self.send_header("Access-Control-Allow-Origin", "*")
-#       self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-#       self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
-#
-#   def send_dict_response(self, d):
-#       """ Sends a dictionary (JSON) back to the client """
-#       self.wfile.write(bytes(dumps(d), "utf8"))
-#
-#   def do_OPTIONS(self):
-#       self.send_response(200)
-#       self._send_cors_headers()
-#       self.end_headers()
-#
-#   def do_GET(self):
-#       # if(self.path):
-#       print(self.path)
-#       if self.path == "/start":
-#         # test()
-#         print("")
-#         # train()
-#       elif self.path == "/train":
-#           train()
-#       elif self.path == "/test":
-#           test()
-#
-#       self.send_response(200)
-#       self._send_cors_headers()
-#       self.end_headers()
-#
-#       response = {}
-#       response["status"] = "OK"
-#       self.send_dict_response(response)
-#
-#
-#   def do_POST(self):
-#       # print(self.path)
-#       self.send_response(200)
-#       self._send_cors_headers()
-#       self.send_header("Content-Type", "application/json")
-#       self.end_headers()
-#
-#       dataLength = int(self.headers["Content-Length"])
-#       data = self.rfile.read(dataLength)
-#
-#       # print(data)
-#
-#       response = {}
-#       response["status"] = "OK"
-#       self.send_dict_response(response)
-#
-#
-# print("Starting server")
-#
-#
-# httpd = HTTPServer(("127.0.0.1", 8000), RequestHandler)
-# print("Hosting server on port 8000")
-# httpd.serve_forever()
-
-
 def against():
-    model_ghostbuster = torch.load('ghostbuster_temp.pth')
+    model_ghostbuster = torch.load('ghostbuster_final.pth')
     model_ghostbuster.eval()
-    model_ghost = torch.load('ghost.pth')
+    model_ghost = torch.load('ghost_final.pth')
     model_ghost.eval()
 
 
@@ -371,7 +290,7 @@ def against():
     eps_end = 0.01
     eps_decay = 0.001
     memory_size = 100000  # check with paper
-    num_episodes = 200  # 1000
+    num_episodes = 10  # 1000
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -426,7 +345,7 @@ def against():
 
             next_state, update_state = em.get_state(timestep)
             # print ('Next State in the form of feature vector',next_state)
-            # update_UI(update_state, action, last_move_type, episode, ghost_win, busters_win)
+            update_UI(update_state, action_ghost, choices_ghost, episode, ghost_win, busters_win)
             state = next_state
             # print(len(state))
             if em.is_done(timestep) == 2:
@@ -453,4 +372,83 @@ def against():
     plot_testing(performance, game_number)
 
 
-train()
+
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from json import dumps
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+
+""" The HTTP request handler """
+
+cred = credentials.Certificate('firebase-adminsdk.json')
+# Initialize the app with a service account, granting admin privileges
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://hackathon-b4e45.firebaseio.com/'
+})
+ref = db.reference('/ghostbuster')
+
+
+class RequestHandler(BaseHTTPRequestHandler):
+
+  def _send_cors_headers(self):
+      """ Sets headers required for CORS """
+      self.send_header("Access-Control-Allow-Origin", "*")
+      self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+      self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
+
+  def send_dict_response(self, d):
+      """ Sends a dictionary (JSON) back to the client """
+      self.wfile.write(bytes(dumps(d), "utf8"))
+
+  def do_OPTIONS(self):
+      self.send_response(200)
+      self._send_cors_headers()
+      self.end_headers()
+
+  def do_GET(self):
+      # if(self.path):
+      print(self.path)
+      if self.path == "/start":
+        # test()
+        print("")
+        # train()
+      elif self.path == "/train":
+          train()
+      elif self.path == "/test":
+          against()
+
+      self.send_response(200)
+      self._send_cors_headers()
+      self.end_headers()
+
+      response = {}
+      response["status"] = "OK"
+      self.send_dict_response(response)
+
+
+  def do_POST(self):
+      # print(self.path)
+      self.send_response(200)
+      self._send_cors_headers()
+      self.send_header("Content-Type", "application/json")
+      self.end_headers()
+
+      dataLength = int(self.headers["Content-Length"])
+      data = self.rfile.read(dataLength)
+
+      # print(data)
+
+      response = {}
+      response["status"] = "OK"
+      self.send_dict_response(response)
+
+
+print("Starting server")
+
+
+httpd = HTTPServer(("127.0.0.1", 8000), RequestHandler)
+print("Hosting server on port 8000")
+httpd.serve_forever()
+
+# against()
