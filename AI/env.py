@@ -485,7 +485,7 @@ class Environment():
     def is_done(self, timestep):
         # game ends when either one detective is at the place of Mr. X
         for each_detective in self.ghostbuster_positions:
-            if each_detective == self.ghost_posititon_avail:
+            if each_detective == self.ghost_posititon:
                 return 1
         if (timestep == 24):
             return 2
@@ -495,17 +495,16 @@ class Environment():
     def winner(self):
 
         for each_ghostbuster in self.ghostbuster_positions:
-            if each_ghostbuster == self.ghost_posititon_avail:
+            if each_ghostbuster == self.ghost_posititon:
                 return False
         return True
 
     def take_action_against(self, action_ghost, choices_ghost, action_ghostbuster, choices_ghostbuster, timestep):
-        next_move =  random.choice(self.board[self.ghost_posititon])
-        self.ghost_posititon_avail = next_move[0]
+        # next_move =  random.choice(self.board[self.ghost_posititon])
+        # self.ghost_posititon_avail = next_move[0]
         # if timestep  in [3, 8, 12, 18, 24]:
         # if timestep  in [1, 3, 5, 8, 10, 12, 15, 18, 20, 24]:
-        self.ghost_posititon = next_move[0]
-
+        self.ghost_posititon = action_ghost
         d = {
             "WALK": 0,
             "SEWAGE": 1,

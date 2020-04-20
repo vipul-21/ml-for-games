@@ -38,7 +38,7 @@ def train():
     target_update = 10  # how often we update target with policy n/w
     memory_size = 100000  # check with paper
     lr = 0.001 #learning rate for adam
-    num_episodes = 200  # 1000
+    num_episodes = 5000  # 1000
     # state_dim = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -196,7 +196,7 @@ def update_UI(data, last_move, last_move_type, epoch, ghost_win, busters_win): #
     time.sleep(4)
 
 def test():
-    model = torch.load('ghostbuster.pth')
+    model = torch.load('ghostbuster_temp.pth')
     model.eval()
     batch_size = 256  # 256
     gamma = 0.999
@@ -377,20 +377,6 @@ def against():
 
     # start_state = [118, 5, [34, 29, 117, 174, 112], [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], 1]
     # start_state = [154, 5, [34, 29, 117, 174, 112], [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], 1]
-    start_state = [118, 5, [34, 29, 117, 174, 112], [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], 1]
-
-    start_feature = generate_feature_space(start_state)
-
-    em = Environment(start_state[0], start_state[1], start_state[2], start_state[3])
-
-    #Ghost_Buster
-    strategy_ghostbuster = EpsilonGreedyStrategy(eps_start, eps_end, eps_decay)
-    agent_ghostbuster = Agent(strategy_ghostbuster, em.num_actions_available(), device)
-
-
-    #Ghost
-    strategy_ghost = EpsilonGreedyStrategy(eps_start, eps_end, eps_decay)
-    agent_ghost = Agent_ghost(strategy_ghost, em.num_actions_available(), device)
 
 
     policy_net_ghost = model_ghost
@@ -401,7 +387,22 @@ def against():
     game_number = []
     for episode in range(num_episodes):
         # reset the environment
+        ghost_pos = random.randint(0,199)
+        li = [val for val in range(200)]
+        ghostbuster_pos = list(random.sample(li, 5))
+        start_state = [ghost_pos, 5, ghostbuster_pos, [[10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4], [10, 8, 4]], 1]
+        start_feature = generate_feature_space(start_state)
+
         em = Environment(start_state[0], start_state[1], start_state[2], start_state[3])
+
+        # Ghost_Buster
+        strategy_ghostbuster = EpsilonGreedyStrategy(eps_start, eps_end, eps_decay)
+        agent_ghostbuster = Agent(strategy_ghostbuster, em.num_actions_available(), device)
+
+        # Ghost
+        strategy_ghost = EpsilonGreedyStrategy(eps_start, eps_end, eps_decay)
+        agent_ghost = Agent_ghost(strategy_ghost, em.num_actions_available(), device)
+
         # print ('Reset',em.ghost_posititon)
 
         # getting initial state
@@ -418,7 +419,7 @@ def against():
             action_ghostbuster = action_tensor_ghostbuster.tolist()
 
             # print('Move to take for Ghost', agent.mappings[action[0]])
-            # print('Move to take', action)
+            print('Move to take', action_ghost, action_ghostbuster)
 
             reward = em.take_action_against(action_ghost, choices_ghost,action_ghostbuster, choices_ghostbuster, timestep)
             # print ('Reward',reward)
@@ -452,4 +453,4 @@ def against():
     plot_testing(performance, game_number)
 
 
-against()
+train()
