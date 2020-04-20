@@ -295,68 +295,6 @@ class Environment():
         # self.possible_moves = self.board[self.ghost_posititon]
 
 
-    def take_action_detectives_random(self):
-        d = {
-            "WALK": 0,
-            "SEWAGE": 1,
-            "TUNNEL": 2,
-            "BLACK": 3
-        }
-        # print(self.ghostbuster_resources)
-        for index, each_detective in enumerate(self.ghostbuster_positions):
-            pm = self.board[each_detective]
-            new_pm = []
-            for x in pm:
-                for k in range(0, len(x[1])):
-                    if (x[1][k] != "BLACK"):
-
-                        if (self.ghostbuster_resources[index][d[x[1][k]]] > 0):
-                            new_pm.append((x[0], x[1][k]))
-            # print("Detective:", index, "moves : ", new_pm, self.ghostbuster_resources[index])
-
-            if (len(new_pm) > 0):
-                random_move = random.choice(new_pm)
-
-                # print(random_move)
-                if 'WALK' == random_move[1]:
-                    resource_used = 0
-
-                elif 'SEWAGE' == random_move[1]:
-                    resource_used = 1
-
-                else:
-                    resource_used = 2
-
-                self.ghostbuster_positions[index] = random_move[0]
-                self.ghostbuster_resources[index][resource_used] -= 1
-
-    def take_action_detectives(self):
-        res_state_loc = []
-        res_state_resources = self.ghostbuster_resources
-
-        for count, det in enumerate(self.ghostbuster_positions):
-            moves = self.board[int(det)]
-            min_dist_node = -1
-            min_dist_val = float("inf")
-
-            for move in moves:
-                val = self.getdistance(self.ghost_posititon_avail, move[0])
-
-                if (val < min_dist_val):
-                    min_dist_node = move
-                    min_dist_val = val
-
-            res_state_loc.append(min_dist_node[0])
-            # print("COUNT: ", count)
-            if (min_dist_node[1][0] == 'WALK'):
-                res_state_resources[count][0] = max(res_state_resources[count][0] - 1, 0)
-
-            elif (min_dist_node[1][0] == 'SEWAGE'):
-                res_state_resources[count][1] = max(res_state_resources[count][1] - 1, 0)
-            else:
-                res_state_resources[count][2] = max(res_state_resources[count][2] - 1, 0)
-        return (res_state_loc, res_state_resources)
-
     def get_state(self, round_number):
         # in_state = [self.ghost_posititon, self.ghost_resources, self.ghostbuster_positions, self.ghostbuster_resources, round_number]
 

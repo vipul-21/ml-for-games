@@ -34,9 +34,6 @@ Experience = namedtuple('Experience', ('state', 'action', 'next_state', 'reward'
 
 ############################TRAIN##########################
 def train():
-    '''
-    Should X position be tensor or not, and how to pass action tuple + need to handle multiple modes of transport in action.
-    '''
 
     batch_size = 55  # 256
     gamma = 0.999
@@ -62,7 +59,6 @@ def train():
     strategy = EpsilonGreedyStrategy(eps_start, eps_end, eps_decay)
 
     agent = Agent(strategy, em.num_actions_available(), device)
-    # print ('No. of available actions: ', em.num_actions_available())
     memory = ReplayMemory(memory_size)
 
     policy_net = DQN().to(device)

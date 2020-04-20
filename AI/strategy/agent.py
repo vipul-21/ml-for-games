@@ -20,7 +20,7 @@ class Agent_ghost():
         if rate > random.random():
             # print ('Exploring')
             action = random.choice(possible_moves)  # pick a possible out of the available ones - change
-            return torch.tensor(action[0]).to(self.device), rate, action[1]  # TODO - model action tensor
+            return torch.tensor(action[0]).to(self.device), rate, action[1]
 
         else:
             # turning off gradient tracking during inference, not training
